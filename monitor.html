@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Arduino Serial</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 30px;
+      text-align: center;
+    }
+    h1 {
+      font-family: "Times New Roman", serif;
+      font-size: 36px;
+      margin-bottom: 5px;
+    }
+    h2 {
+      font-family: "Times New Roman", serif;
+      font-size: 20px;
+      font-weight: normal;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: #555;
+    }
+    #output {
+      background-color: #eeeeee;
+      border: 1px solid #ccc;
+      padding: 15px;
+      width: 80%;
+      height: 300px;
+      margin: 0 auto 20px;
+      overflow-y: scroll;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 14px;
+      text-align: left;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Arduino Serial</h1>
+  <h2>By: Bento Galdeano</h2>
+
+  <button id="connect">Conectar ao Arduino</button>
+  <div id="output">Aguardando conexão...</div>
+
+  <script>
+    let port;
+    let reader;
+
+    document.getElementById('connect').addEventListener('click', async () => {
+      try {
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
+
+        const decoder = new TextDecoderStream();
+        const inputDone = port.readable.pipeTo(decoder.writable);
+        reader = decoder.readable.getReader();
+
+        const output = document.getElementById('output');
+        output.innerHTML = "Conectado!\n";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          output.innerHTML += value;
+          output.scrollTop = output.scrollHeight;
+        }
+      } catch (err) {
+        alert("Erro: " + err);
+      }
+    });
+  </script>
+</body>
+</html>
